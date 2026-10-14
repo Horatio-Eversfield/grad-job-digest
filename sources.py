@@ -22,6 +22,7 @@ import json
 import re
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
@@ -358,8 +359,16 @@ def linkedin(place, cfg, token, since_hours=None):
 # Job page details, for boards whose listing has no date.
 # --------------------------------------------------------------------------
 
+# Job pages are only fetched from these hosts. The URL comes from the board's
+# own listing, so a bad listing must not make this tool fetch anything else.
+JOB_PAGE_HOSTS = {"higherin.com", "www.prospects.ac.uk"}
+
+
 def job_page_details(url):
     """Read datePosted and the description from a job page's JSON-LD."""
+    parts = urllib.parse.urlsplit(url or "")
+    if parts.scheme != "https" or parts.hostname not in JOB_PAGE_HOSTS:
+        raise ValueError("job page not on the board's own site, skipped")
     page = _get(url)
     for block in re.findall(
             r'<script[^>]*application/ld\+json[^>]*>(.*?)</script>', page, re.S):

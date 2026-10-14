@@ -419,7 +419,10 @@ def card(p):
         p["company"], p["location"], salary,
         f"closes {p['deadline']}" if p["deadline"] else "",
         when(p.get("age_hours")), p["source"]] if x)
-    url = escape(p["url"])
+    # Only web links go in the page, so a bad listing cannot plant a
+    # javascript: link.
+    url = p["url"] or ""
+    url = escape(url if url.lower().startswith(("https://", "http://")) else "#")
     badge = (f"<td width='60' valign='top' style='padding:18px 0 18px 18px'>"
              f"<div style='width:46px;height:46px;line-height:46px;"
              f"border-radius:23px;background:{GOOD};color:#fff;"
