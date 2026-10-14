@@ -46,3 +46,8 @@ degree_class:
 # Many adverts never state a class. Set this to true to hide those too. That
 # is stricter, and hides many roles you could apply for.
 hide_if_class_not_stated: false
+
+# Optional. Did you study at a Russell Group university? Set to no and roles
+# whose advert requires one are hidden. Roles that only prefer one are still
+# shown, with a note. Leave blank, or set to yes, to hide nothing.
+russell_group:

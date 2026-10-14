@@ -268,8 +268,39 @@ def degree_blocked(r, mine, hide_unstated):
     return DEGREE_RANK[need] > DEGREE_RANK.get(mine, 0)
 
 
+# Russell Group. "FTSE Russell" is an index business, so only the full phrase
+# counts. A sentence that only prefers it, or waives it, never hides a role.
+_RUSSELL = re.compile(r"\brussell[- ]group\b", re.I)
+_PREFERRED = re.compile(r"prefer|ideally|desirable|advantage|bonus|a plus|"
+                        r"nice to have", re.I)
+_UNI_WAIVED = re.compile(r"not required|regardless of|don'?t need|do not need|"
+                         r"any university|all universities|not essential", re.I)
+
+
+def russell_group(text):
+    """"required", "preferred", or None if the advert does not ask for a
+    Russell Group university."""
+    found = None
+    for sentence in re.split(r"(?<=[.!?\n])\s+", text or ""):
+        if not _RUSSELL.search(sentence):
+            continue
+        if _UNI_WAIVED.search(sentence):
+            return None
+        if not _PREFERRED.search(sentence):
+            return "required"
+        found = "preferred"
+    return found
+
+
 def pick(roles, profile, cfg):
     """Score every role, keep those at or above the threshold, best first."""
+    for r in roles:
+        r["russell"] = russell_group(r.get("description"))
+    # YAML reads yes and no as true and false.
+    if profile.get("russell_group") is False:
+        before = len(roles)
+        roles = [r for r in roles if r["russell"] != "required"]
+        cfg["_uni_hidden"] = before - len(roles)
     mine = profile.get("degree_class")
     # YAML reads an unquoted 2:1 as the base-60 number 121.
     mine = {121: "2:1", 122: "2:2"}.get(mine, str(mine or "").strip().lower())
@@ -381,6 +412,10 @@ def watch(r, profile):
         m = rx.search(text)
         if m and say(m) not in out:
             out.append(say(m))
+    if r.get("russell") == "required":
+        out.append("Asks for a Russell Group university.")
+    elif r.get("russell") == "preferred":
+        out.append("Prefers a Russell Group university.")
     mine = [str(w) for w in profile.get("watch_for") or [] if _has(text.lower(), str(w))]
     if mine:
         out.append(f"Mentions {_list([chr(34) + w + chr(34) for w in mine])}, "
@@ -460,7 +495,7 @@ def card(p):
 </td></tr>"""
 
 
-def render(picks, counts, errors, n_new, degree_hidden=None):
+def render(picks, counts, errors, n_new, hidden=()):
     date = now().strftime("%A %d %B")
     n = len(picks)
     lead = (f"{n} new role{'s' * (n != 1)} worth a look" if picks
@@ -469,8 +504,7 @@ def render(picks, counts, errors, n_new, degree_hidden=None):
     # look the same.
     foot = (f"Checked {sum(counts.values()):,} roles across {len(counts)} "
             f"boards. {n_new} were new, {n} shown."
-            + (f" {degree_hidden} hidden for asking a higher degree class."
-               if degree_hidden else ""))
+            + "".join(" " + h for h in hidden))
     problems = (f"<p style='margin:8px 0 0;color:#c0392b;font-weight:600'>"
                 f"Problems: {escape('; '.join(errors))}</p>" if errors else "")
     return f"""<!doctype html>
@@ -549,9 +583,18 @@ def run(cfg, profile, dry_run=False):
     fresh, page_errors = new_roles(rows, seen, cfg)
     errors += page_errors
     picks = pick(fresh, profile, cfg)
-    hidden = cfg.get("_degree_hidden")
-    if hidden is not None:
-        print(f"  {hidden} hidden for asking a higher degree class")
+    hidden = []
+    if cfg.get("_degree_hidden") is not None:
+        print(f"  {cfg['_degree_hidden']} hidden for asking a higher degree class")
+        if cfg["_degree_hidden"]:
+            hidden.append(f"{cfg['_degree_hidden']} hidden for asking a higher "
+                          f"degree class.")
+    if cfg.get("_uni_hidden") is not None:
+        print(f"  {cfg['_uni_hidden']} hidden for asking for a Russell Group "
+              f"university")
+        if cfg["_uni_hidden"]:
+            hidden.append(f"{cfg['_uni_hidden']} hidden for asking for a "
+                          f"Russell Group university.")
 
     html = render(picks, counts, errors, len(fresh), hidden)
     write(OUT, html)

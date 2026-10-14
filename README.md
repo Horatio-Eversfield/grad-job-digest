@@ -79,8 +79,8 @@ list title words that rule a job out. Under `skills`, list skills and tools
 from your CV, such as Excel or customer service. Under `experience`, add
 past jobs, internships or projects, each with the skills it used. Under
 `watch_for`, list anything you want warned about, such as cold calling.
-Optionally set `degree_class` (see
-[Degree class](#degree-class-optional)). Save the file.
+Optionally set `degree_class` and `russell_group` (see
+[Degree class and university](#degree-class-and-university-optional)). Save the file.
 
 **7. Run it.** Type this and press Enter:
 
@@ -106,7 +106,7 @@ email, see [Email](#email-optional).
 
 | File | What it controls |
 |---|---|
-| `profile.yaml` | Keywords you want, skills and experience from your CV, words to warn about, title words that rule a role out, and your degree class (optional) |
+| `profile.yaml` | Keywords you want, skills and experience from your CV, words to warn about, title words that rule a role out, and your degree class and university (optional) |
 | `config.yaml` | City, how many roles, score cut-off, boards, role types |
 | `.env` | Email and LinkedIn settings, both optional. Copy from `.env.example` |
 
@@ -140,7 +140,9 @@ found by matching set phrases, so a downside worded another way is missed.
 Milkround gives only a short snippet of each advert, so its roles get fewer
 reasons and warnings.
 
-## Degree class (optional)
+## Degree class and university (optional)
+
+### Degree class
 
 Set `degree_class` in `profile.yaml` to `first`, `2:1`, `2:2` or `third`, and
 roles whose advert asks for a higher class are hidden. The digest footer says
@@ -150,6 +152,19 @@ The class is read from the advert text, so it leans towards showing a role.
 When an advert names more than one class, the lowest counts. "2:1 not
 required" counts as no minimum. Adverts that never mention a class are shown,
 unless you set `hide_if_class_not_stated: true`.
+
+### Russell Group
+
+Some employers only take graduates from Russell Group universities, the 24
+UK research universities listed at russellgroup.ac.uk. If you did not study
+at one, set `russell_group: no` in `profile.yaml`. Roles whose advert
+requires a Russell Group degree are then hidden, and the footer says how
+many. Leave it blank, or set it to `yes`, to hide nothing.
+
+Only the phrase "Russell Group" counts, so "FTSE Russell" and similar names
+are ignored. A role that only prefers a Russell Group degree ("ideally",
+"desirable") is never hidden. It gets a note under the job instead. Few
+adverts state this: about 1 in 600 London roles in October 2026.
 
 ## Sources
 
