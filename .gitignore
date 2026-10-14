@@ -1,0 +1,9 @@
+# Secrets and personal settings. Never commit.
+.env
+profile.yaml
+
+# Rebuilt every run.
+state/
+digests/
+digest.html
+__pycache__/

@@ -1,0 +1,48 @@
+# Copy this file to profile.yaml and edit it. profile.yaml is gitignored,
+# so your own copy is never committed.
+
+# Words or phrases you want. A match in the job title counts most, a match
+# in the advert text counts a little. Case does not matter.
+keywords:
+  - marketing
+  - finance
+  - project
+  - analyst
+
+# Optional. Skills and tools from your CV. When an advert asks for one, the
+# role scores higher and the email says so under the job.
+skills:
+  - Excel
+  - SQL
+  - customer service
+
+# Optional. Past jobs, internships and projects, each with the skills it used.
+# When an advert asks for one of those skills, the email names the experience
+# under the job. These skills count towards the score like the list above.
+# Write `what` so it reads after "Your", e.g. "Your two years as a ...".
+experience:
+  - what: two years as a sales assistant at a high street retailer
+    skills: [customer service, cash handling, teamwork]
+  - what: final-year dissertation on regional house prices
+    skills: [data analysis, Excel, research]
+
+# Optional. Words you would want warned about, such as cold calling. A role
+# that mentions one is still shown, with a warning under it.
+watch_for:
+  - cold calling
+
+# Words that rule a role out when they appear in its title.
+avoid:
+  - senior
+  - intern
+  - internship
+  - placement
+
+# Optional. Your degree class: first, 2:1, 2:2 or third. Roles whose advert
+# asks for a higher class are hidden. Leave blank to show every role.
+# profile.yaml is gitignored, so this stays on your machine.
+degree_class:
+
+# Many adverts never state a class. Set this to true to hide those too. That
+# is stricter, and hides many roles you could apply for.
+hide_if_class_not_stated: false

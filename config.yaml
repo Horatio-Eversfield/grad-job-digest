@@ -1,0 +1,80 @@
+# Digest settings. Plain text, safe to edit.
+
+# City to search. TARGETjobs, Milkround and Higherin take most UK city names.
+# Prospects needs its own page name for any city but London: see
+# prospects_page below.
+location: London
+
+# Most roles shown per digest.
+roles_per_digest: 10
+
+# Roles scoring below this (0 to 100) are left out. A title keyword match
+# alone scores 40. Lower it to see more, raise it to see fewer.
+min_score: 40
+
+# A role first seen today but posted longer ago than this is not treated as
+# new. After missed days the window stretches to cover the gap, up to a week.
+max_age_hours: 48
+
+# Boards to read. Set one to false to switch it off.
+sources:
+  targetjobs: true
+  milkround: true
+  higherin: true
+  prospects: true
+  wellfound: true    # startups; plainly senior roles are left out
+  linkedin: false    # needs an Apify token in .env, see the README
+
+# LinkedIn, read through Apify. Only used when linkedin is true above. Each
+# role found costs about $0.001 from Apify's free monthly credit, and every
+# extra search adds to that.
+linkedin:
+  searches:
+    - graduate
+  experience: []         # e.g. [entry]. Empty is safer: the filter hides many real graduate roles
+  max_items: 150         # most roles per search per run
+  max_charge_usd: 0.25   # hard cap per run, enforced by Apify
+
+# Which role types to keep, per board, using each board's own labels.
+# Internships, placements and work experience are left out by default.
+# Add any of them back by adding a line, for example "Internship".
+role_types:
+  targetjobs:
+    - Graduate job
+    - Law training contract
+    - Law pupillage
+    - Training
+  higherin:
+    - Graduate Scheme
+    - Graduate Job
+  prospects:
+    - graduate scheme
+    - graduate job
+    - law training contract
+
+# Milkround only allows the first page of each search to be read, so several
+# searches are read instead of one. These are Milkround's own search names.
+milkround_pages:
+  - graduate-scheme
+  - graduate-jobs
+  - graduate-trainee
+  - graduate-analyst
+  - junior
+
+# Wellfound role pages to read, page 1 of each. Wellfound's own role names,
+# from the URL of wellfound.com/role/l/<name>/london. Add or remove freely.
+wellfound_pages:
+  - operations
+  - business-development
+  - sales
+  - customer-success
+  - marketing
+  - business-analyst
+  - data-analyst
+  - product-manager
+  - software-engineer
+
+# Prospects page for a city other than London: browse to the city on
+# prospects.ac.uk/browse-graduate-jobs and copy the last part of the URL,
+# for example "manchester-123". Leave blank for London.
+prospects_page:
