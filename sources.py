@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 
 UA = "grad-job-digest/1.0 (personal job-search tool)"
 PAUSE = 0.5
+RETRY_PAUSE = 3
 TIMEOUT = 30
 
 
@@ -40,11 +41,21 @@ def _get(url, body=None, headers=None):
     h.update(headers or {})
     req = urllib.request.Request(url, data=data, headers=h,
                                  method="POST" if data else "GET")
-    try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-            return r.read().decode("utf-8", "replace")
-    finally:
-        time.sleep(PAUSE)
+    # One retry on a network or certificate error: Prospects failed an SSL
+    # check once and passed three times straight after. An HTTP error such
+    # as 403 is the board's answer, so it is not retried.
+    for attempt in (1, 2):
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError:
+            raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            if attempt == 2:
+                raise
+            time.sleep(RETRY_PAUSE)
+        finally:
+            time.sleep(PAUSE)
 
 
 def _text(s, limit=8000):

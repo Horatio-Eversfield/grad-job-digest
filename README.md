@@ -81,6 +81,8 @@ past jobs, internships or projects, each with the skills it used. Under
 `watch_for`, list anything you want warned about, such as cold calling.
 Optionally set `degree_class` and `russell_group` (see
 [Degree class and university](#degree-class-and-university-optional)). Save the file.
+Before you save, read [Choosing keywords](#choosing-keywords): a few
+minutes there makes the biggest difference to what you get.
 
 **7. Run it.** Type this and press Enter:
 
@@ -126,6 +128,30 @@ Each role scores 0 to 100:
 
 Roles below `min_score` in `config.yaml` are left out. With no keywords at
 all, the digest shows the newest roles instead.
+
+### Choosing keywords
+
+Keywords match whole words, with common endings: `engineer` also finds
+"engineers" and "engineering", and `environmental` also finds "environment".
+Words of three letters or fewer, such as `PR` or `law`, match exactly.
+
+- **Use single words, not phrases.** A phrase must appear exactly as
+  written. `graduate engineer` misses "Graduate Geotechnical Engineer", and
+  `ESG analyst` misses "Sustainability Consultant". `engineer` and
+  `sustainability` on their own find both.
+- **Add the other word forms you mean.** Endings cover "engineer" and
+  "engineering", but not "estimator" and "estimating". List both if you want
+  both.
+- **Use `avoid` for generic words.** One keyword in the title is enough to
+  pass the default cut-off. So `engineer` brings in software engineers,
+  `consultant` brings in recruitment consultants, and `commercial` brings in
+  sales roles. Add the words you do not want to `avoid`, for example
+  `software`, `recruitment` or `sales`. Tested on 975 London roles, adding
+  `software` to `avoid` removed all 20 software roles from a mechanical
+  engineering profile and kept the other 120.
+- **Not every sector is on these boards.** They are graduate boards, so
+  they carry few lab, pharmaceutical, NHS or teaching roles. If your digest
+  is thin, the roles may be posted somewhere else.
 
 Under each job, the email explains its score in plain words, from the same
 matches: the target words in the title, the experience whose skills the

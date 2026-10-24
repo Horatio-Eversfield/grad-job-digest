@@ -195,8 +195,35 @@ def new_roles(rows, seen, cfg):
 # scoring
 # --------------------------------------------------------------------------
 
-def _has(text, word):
-    return re.search(r"\b" + re.escape(word.lower()) + r"\b", text) is not None
+# Endings a keyword may take, so "engineer" finds "Engineering" and
+# "environmental" finds "Environment". A fixed list, not "starts with":
+# "care" must not find "career", nor "marketing" find "markets".
+_ENDINGS = r"(?:s|es|ing|ings|ed|al|ally)?"
+
+
+def _forms(word):
+    """Regex for a keyword and its word forms. Only the last word changes,
+    and only when it is 4 or more letters, so "PR", "law" and "ESG" stay
+    exact."""
+    head, _, last = word.lower().rpartition(" ")
+    if len(last) < 4 or not last.isalpha():
+        return re.escape(word.lower())
+    stems = {last}
+    # environmental finds environment. Only -mental: cutting every -al
+    # made "analytical" find "Analytics" and "structural" find "Structured".
+    if last.endswith("mental"):
+        stems.add(last[:-2])
+    if last.endswith("s") and len(last) >= 5:      # communications
+        stems.add(last[:-1])
+    alts = "|".join(sorted(map(re.escape, stems), key=len, reverse=True))
+    return (re.escape(head + " ") if head else "") + f"(?:{alts}){_ENDINGS}"
+
+
+def _has(text, word, forms=False):
+    """Whole-word match. With forms, keywords also match their word forms;
+    skills, avoid and watch words stay exact."""
+    pat = _forms(word) if forms else re.escape(word.lower())
+    return re.search(r"\b" + pat + r"\b", text) is not None
 
 
 def score(r, profile):
@@ -207,10 +234,11 @@ def score(r, profile):
     if any(_has(title, w) for w in profile.get("avoid") or []):
         return 0, []
     words = [str(w) for w in profile.get("keywords") or []]
-    in_title = [w for w in words if _has(title, w)]
+    in_title = [w for w in words if _has(title, w, forms=True)]
     # Skills from your CV count like a keyword found in the advert text.
     extra = [w for w in _skills(profile) if w not in words]
-    in_body = [w for w in words + extra if w not in in_title and _has(body, w)]
+    in_body = ([w for w in words if w not in in_title and _has(body, w, forms=True)]
+               + [w for w in extra if _has(body, w)])
     s = (40 + 10 * (len(in_title) - 1) if in_title else 0)
     s = min(s, 60) + min(5 * len(in_body), 30)
     if r.get("age_hours") is not None and r["age_hours"] < 24:
@@ -347,10 +375,10 @@ def why(r, profile):
     body = " ".join([r["description"] or "", r["company"] or ""]).lower()
     words = [str(w) for w in profile.get("keywords") or []]
     skills = _skills(profile)
-    target = [w for w in words if _has(title, w)]
+    target = [w for w in words if _has(title, w, forms=True)]
     have = [w for w in skills if w not in target and _has(body, w)]
     also = [w for w in words if w not in target and w not in have
-            and _has(body, w)]
+            and _has(body, w, forms=True)]
     out = []
     q = lambda ws: _list([f'"{w}"' for w in ws])
     if target:

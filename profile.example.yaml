@@ -1,8 +1,10 @@
 # Copy this file to profile.yaml and edit it. profile.yaml is gitignored,
 # so your own copy is never committed.
 
-# Words or phrases you want. A match in the job title counts most, a match
-# in the advert text counts a little. Case does not matter.
+# Words you want. A match in the job title counts most, a match in the
+# advert text counts a little. Case does not matter. Single words work best:
+# "engineer" also finds "engineering", but a phrase must appear exactly.
+# See "Choosing keywords" in the README.
 keywords:
   - marketing
   - finance
@@ -31,7 +33,9 @@ experience:
 watch_for:
   - cold calling
 
-# Words that rule a role out when they appear in its title.
+# Words that rule a role out when they appear in its title. Use it for the
+# wrong kind of match a generic keyword brings in: with "engineer" above,
+# add "software"; with "consultant", add "recruitment".
 avoid:
   - senior
   - intern
