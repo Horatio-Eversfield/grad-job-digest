@@ -113,6 +113,10 @@ def parse_date(value):
     s = str(value or "").strip()
     if not s:
         return None
+    # Python before 3.11 reads only 3 or 6 decimal places of a second, and
+    # Milkround sends 1 or 2 (12:21.3Z), so pad or trim them to 6.
+    s = re.sub(r"(T\d\d:\d\d:\d\d)\.(\d+)",
+               lambda m: f"{m.group(1)}.{m.group(2)[:6].ljust(6, '0')}", s)
     try:
         d = datetime.fromisoformat(s.replace("Z", "+00:00"))
     except ValueError:
@@ -411,10 +415,15 @@ def why(r, profile):
 # Things in an advert a graduate may want to know before applying. Read
 # from the advert text, so a downside worded another way is missed.
 _WATCH = [
-    (re.compile(r"\b(\d+)\s*\+?\s*(?:-\s*\d+\s*)?years?'?\s+(?:of\s+)?"
+    # "Up to 3 years" or "0-2 years" is a ceiling, not a demand, so a match
+    # with one of those in front of it says nothing (None).
+    (re.compile(r"(up to|no more than|not more than|less than|fewer than|under|"
+                r"maximum of|max\.?|at most)?\s*\b(\d+)\s*\+?\s*(?:-\s*\d+\s*)?"
+                r"years?'?\s+(?:of\s+)?"
                 r"(?:relevant\s+|professional\s+|commercial\s+|work\s+)?"
                 r"experience", re.I),
-     lambda m: f"Asks for {m.group(1)} year{'s' * (m.group(1) != '1')} of experience."),
+     lambda m: None if m.group(1) or m.group(2) == "0" else
+     f"Asks for {m.group(2)} year{'s' * (m.group(2) != '1')} of experience."),
     (re.compile(r"\b(\d+)[- ]month (?:fixed[- ]term )?contract|\bfixed[- ]term\b"
                 r"|\btemporary\b", re.I),
      lambda m: (f"{m.group(1)}-month contract, not permanent." if m.group(1)
@@ -437,9 +446,10 @@ def watch(r, profile):
     text = r["description"] or ""
     out = []
     for rx, say in _WATCH:
-        m = rx.search(text)
-        if m and say(m) not in out:
-            out.append(say(m))
+        # The first match that says something; a ceiling is skipped.
+        note = next((n for n in map(say, rx.finditer(text)) if n), None)
+        if note and note not in out:
+            out.append(note)
     if r.get("russell") == "required":
         out.append("Asks for a Russell Group university.")
     elif r.get("russell") == "preferred":
